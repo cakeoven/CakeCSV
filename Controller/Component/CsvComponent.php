@@ -1,0 +1,150 @@
+<?php
+
+App::uses('Component', 'Controller');
+
+/**
+ *
+ */
+class CsvComponent extends Component {
+
+	/**
+	 * The calling Controller
+	 *
+	 * @var Controller
+	 */
+	public $Controller;
+
+	/**
+	 * the delimiter to use for the CSV file
+	 *
+	 * @var string
+	 */
+	public $delimiter;
+
+	/**
+	 * The character each cell will be enclosed
+	 *
+	 * @var string
+	 */
+	public $enclosure;
+
+	/**
+	 * Contains the encoding the data where fetched
+	 *
+	 * @var string
+	 */
+	public $dataEncoding;
+
+	/**
+	 * Contains the encoding to convert the data for the csv file
+	 *
+	 * @var string
+	 */
+	public $csvEncoding;
+
+	/**
+	 * Starts up ExportComponent for use in the controller
+	 *
+	 * @param Controller $controller A reference to the instantiating controller object
+	 * @return void
+	 */
+	public function startup(Controller $controller) {
+		$this->Controller = $controller;
+
+		if (empty($this->dataEncoding)) {
+			$this->dataEncoding = 'UTF-8';
+		}
+
+		if (empty($this->csvEncoding)) {
+			$this->csvEncoding = $this->dataEncoding;
+		}
+	}
+
+	/**
+	 * Exports a Csv
+	 *
+	 * @param array  $data
+	 * @param string $filename
+	 */
+	public function export($data, $filename = '') {
+		if (empty($filename)) {
+			$filename = $this->getDefaultFileName();
+		}
+
+		// Flatten each row of the data array
+		$flatData = $values = [];
+		foreach ($data as $numericKey => $row) {
+			$flatRow = [];
+			$this->flattenArray($row, $flatRow);
+			$flatData[$numericKey] = $flatRow;
+		}
+
+		$headers = $this->getKeysForHeaders($flatData);
+		$csv = $this->getCsvOutput($flatData, $headers);
+
+		$this->Controller->autoRender = false;
+		$this->Controller->response->type('csv');
+		$this->Controller->response->download($filename);
+		$this->Controller->response->body($csv);
+	}
+
+	private function getCsvOutput($data, $headers) {
+		$csvFp = fopen('php://temp', 'r+');
+		fputcsv($csvFp, $headers, $this->delimiter, $this->enclosure);
+		foreach ($data as $row) {
+			fputcsv($csvFp, $row, $this->delimiter, $this->enclosure);
+		}
+		rewind($csvFp);
+		$output = '';
+		while (($buffer = fgets($csvFp, 4096)) !== false) {
+			$output .= $buffer;
+		}
+		fclose($csvFp);
+		return $output;
+	}
+
+	/**
+	 * Flatten the array to be display it in the CSV file
+	 *
+	 * @param array  $array
+	 * @param        $flatArray
+	 * @param string $parentKeys
+	 */
+	public function flattenArray($array, &$flatArray, $parentKeys = '') {
+		foreach ($array as $key => $value) {
+			$chainedKey = ($parentKeys !== '') ? $parentKeys . '.' . $key : $key;
+			if (is_array($value)) {
+				$this->flattenArray($value, $flatArray, $chainedKey);
+			} else {
+				if (!empty($this->csvEncoding) && $this->dataEncoding != $this->csvEncoding) {
+					$flatArray[$chainedKey] = iconv($this->dataEncoding, $this->csvEncoding, $value);
+				} else {
+					$flatArray[$chainedKey] = $value;
+				}
+			}
+		}
+	}
+
+	/**
+	 * Get the headers of a row
+	 *
+	 * @param array $data
+	 * @return array
+	 */
+	public function getKeysForHeaders($data) {
+		$headerRow = [];
+		foreach ($data as $key => $value) {
+			foreach ($value as $fieldName => $fieldValue) {
+				if (array_search($fieldName, $headerRow) === false) {
+					$headerRow[] = $fieldName;
+				}
+			}
+		}
+
+		return $headerRow;
+	}
+
+	private function getDefaultFileName() {
+		return "export_" . $this->Controller->name . "_" . date("Y_m_d") . ".csv";
+	}
+}

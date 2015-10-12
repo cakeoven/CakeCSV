@@ -6,14 +6,14 @@ Jose has accepted the pull request, so I suggest you use his plugin, and use it'
 
 # CakePHP Export as CSV Plugin #
 
-	var $components = array('Export.Export');
+	var $components = array('CakeCsv.Csv');
 
 	public function export_data() {
 		$data = $this->MyModel->find('all');
 		$this->Export->exportCsv($data);
 	}
 
-A CakePHP 2.X plugin to export / download data as a CSV file. Pass it the result of a `$this->MyModel->find('all');` call, and it'll flatten it and download it as a .csv file.
+A CakePHP 2.x plugin to export / download data as a CSV file. Pass it the result of a `$this->MyModel->find('all');` call, and it'll flatten it and download it as a .csv file.
 
 It handles nested `belongsTo` associations just fine. As for `hasMany` (and other) associations, I don't think they can (or ever need to be) handled gracefully in a single CSV export. If you think differently, I'm open to suggestions or pull requests.
 
@@ -24,7 +24,7 @@ Sympathising with my former (CakePHP n00b) self, verbose instructions follow. If
 
 ### 1. Install the plugin into your app/Plugin/Export directory ###
 
-	git submodule add git@github.com:joshuapaling/CakePHP-Export-CSV-Plugin.git app/Plugin/Export
+	git submodule add git@github.com:gmponos/CakeCSV.git app/Plugin/CakeCSV
 
 or download it from https://github.com/joshuapaling/CakePHP-Export-CSV-Plugin
 
@@ -32,7 +32,7 @@ or download it from https://github.com/joshuapaling/CakePHP-Export-CSV-Plugin
 
 In app/Config/bootstrap.php, at the bottom, add a line to load the plugin - either:
 
-	CakePlugin::load('Export'); // Loads only the Export plugin
+	CakePlugin::load('CakeCSV'); // Loads only the Export plugin
 
 or
 
@@ -45,7 +45,7 @@ Add 'Export.Export' to your Components array of the relevant controller (the fir
 If you added it to your AppController.php, it might start something like this:
 
 	class AppController extends Controller {
-		var $components = array('Export.Export', 'Auth', 'Session', 'Cookie', 'RequestHandler', 'Security');
+		var $components = array('CakeCSV.Csv', 'Auth', 'Session', 'Cookie', 'RequestHandler', 'Security');
 
 ### 4. Start Exporting your Data! Example: ###
 
@@ -59,7 +59,7 @@ Say you had a model / controller for Cities. And say that a City belongsTo a Sta
 			)
 		));
 		$data = $this->City->find('all');
-		$this->Export->exportCsv($data, 'cities.csv');
+		$this->Csv->export($data, 'cities.csv');
 		// a CSV file called myExport.csv will be downloaded by the browser.
 	}
 
@@ -129,7 +129,7 @@ And the export component will output a CSV like this:
 
 ## Supported CakePHP versions ##
 
-Tested with CakePHP 2.3. Should work with all CakePHP 2.X.
+Tested with CakePHP 2.6. Should work with all CakePHP 2.X.
 
 ## License ##
 
