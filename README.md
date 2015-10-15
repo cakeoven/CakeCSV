@@ -3,7 +3,7 @@
 ## Thanks 
 
 Many thanks to [joshuapaling](https://github.com/joshuapaling/CakePHP-Export-CSV-Plugin). This is a project forked from his repo. He mentions that his plugin is deprecated but I think it was a nice and simple development and I thought to keep it up.
-I didn't do a pull request to the initial repo because this plugin doesn't follow the CakePHP coding standards.
+I didn't do a pull request to the initial repo because this plugin doesn't follow the CakePHP coding standards and also made a lot of changes to the initial plugin.
 
 ## Description
 
@@ -11,6 +11,8 @@ A CakePHP 2.x plugin to export/download data as a CSV file. Pass it the result o
 
 It handles nested `belongsTo` associations just fine. As for `hasMany` (and other) associations, I don't think they can (or ever need to be) handled gracefully in a single CSV export.
 If you think differently, I'm open to suggestions or pull requests.
+
+Tested with CakePHP 2.6. Should work with all CakePHP 2.X.
 
 ## Installation
 
@@ -111,7 +113,7 @@ Lets say City `belongsTo` State, which `belongsTo` country. You might fetch data
 		),
 	)
 
-And the export component will output a CSV like this:
+And the Csv component will output a CSV like this:
 
 <table cellpadding="7">
 	<tr>
@@ -142,18 +144,10 @@ Please see [CHANGELOG](CHANGELOG.md) for more information what has changed recen
 
 Please see [CONTRIBUTING](CONTRIBUTING.md) and [CONDUCT](CONDUCT.md) for details.
 
-## Security
-
-If you discover any security related issues, please email :author_email instead of using the issue tracker.
-
-## Supported CakePHP versions
-
-Tested with CakePHP 2.6. Should work with all CakePHP 2.X.
-
 ## Credits
 
-- [George Mponos][http://gmponos.webthink.gr]
-- [Joshua Paling][http://www.bbldigital.com.au/]
+- George Mponos - http://gmponos.webthink.gr
+- Joshua Paling - http://www.bbldigital.com.au/
 
 ## License
 
