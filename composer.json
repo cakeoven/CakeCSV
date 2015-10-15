@@ -1,17 +1,26 @@
 {
-  "name": "cakeoven/csv_export",
+  "name": "cakeoven/cake_csv",
   "description": "A CakePHP Component to export CSV files",
-  "type": "cakephp-plugin",
-  "license": "MIT",
+  "homepage": "http://github.com/cakeoven/CakeCSV",
   "keywords": [
+    "cakeoven",
     "cakephp",
     "plugin",
     "component",
     "csv"
   ],
-  "homepage": "http://github.com/gmponos/CakeCSV",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "George Mponos",
+      "email": "gmponos@gmail.com",
+      "homepage": "gmponos@gmail.com",
+      "role": "developer"
+    }
+  ],
+  "type": "cakephp-plugin",
   "support": {
-    "issues": "https://github.com/gmponos/CakeCSV/issues"
+    "issues": "https://github.com/cakeoven/CakeCSV/issues"
   },
   "require": {
     "php": ">=5.4.16",
@@ -22,7 +31,12 @@
     "phpunit/phpunit": "*"
   },
   "suggest": {
-    "apigen/apigen": "Produce Documentations very easily via DocBlocks"
+    "apigen/apigen": "*"
   },
-  "prefer-stable": true
+  "prefer-stable": true,
+  "extra": {
+    "branch-alias": {
+      "dev-master": "1.0-dev"
+    }
+  }
 }
