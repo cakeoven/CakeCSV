@@ -74,9 +74,8 @@ vendor/
 !webroot/vendor
 
 ### ApiGen
-/webroot/doc/
+docs
 
 ### Custom
-/build
-/dist
-/tags
+build
+dist

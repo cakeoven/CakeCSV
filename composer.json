@@ -1,5 +1,5 @@
 {
-  "name": "cake/cake_csv",
+  "name": "cakeoven/csv_export",
   "description": "A CakePHP Component to export CSV files",
   "type": "cakephp-plugin",
   "license": "MIT",
