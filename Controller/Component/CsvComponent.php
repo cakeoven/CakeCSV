@@ -3,7 +3,12 @@
 App::uses('Component', 'Controller');
 
 /**
+ * Csv Component
  *
+ * @author      Joshua Paling <http://www.bbldigital.com.au/>
+ * @author      George Mponos <gmponos@gmail.com>
+ * @description A component for CakePHP 2.x to export data as CSV
+ * @licence     MIT
  */
 class CsvComponent extends Component {
 
@@ -88,6 +93,13 @@ class CsvComponent extends Component {
 		$this->Controller->response->body($csv);
 	}
 
+	/**
+	 * Get the output to save as CSV
+	 *
+	 * @param array $data    The data used for the CSV
+	 * @param array $headers The headers used for the CSV
+	 * @return string
+	 */
 	private function getCsvOutput($data, $headers) {
 		$csvFp = fopen('php://temp', 'r+');
 		fputcsv($csvFp, $headers, $this->delimiter, $this->enclosure);
@@ -100,6 +112,10 @@ class CsvComponent extends Component {
 			$output .= $buffer;
 		}
 		fclose($csvFp);
+
+		if (!empty($this->csvEncoding) && $this->dataEncoding != $this->csvEncoding) {
+			$output = iconv($this->dataEncoding, $this->csvEncoding, $output);
+		}
 		return $output;
 	}
 
@@ -107,7 +123,7 @@ class CsvComponent extends Component {
 	 * Flatten the array to be display it in the CSV file
 	 *
 	 * @param array  $array
-	 * @param        $flatArray
+	 * @param array  $flatArray
 	 * @param string $parentKeys
 	 */
 	public function flattenArray($array, &$flatArray, $parentKeys = '') {
@@ -116,11 +132,7 @@ class CsvComponent extends Component {
 			if (is_array($value)) {
 				$this->flattenArray($value, $flatArray, $chainedKey);
 			} else {
-				if (!empty($this->csvEncoding) && $this->dataEncoding != $this->csvEncoding) {
-					$flatArray[$chainedKey] = iconv($this->dataEncoding, $this->csvEncoding, $value);
-				} else {
-					$flatArray[$chainedKey] = $value;
-				}
+				$flatArray[$chainedKey] = $value;
 			}
 		}
 	}
@@ -144,6 +156,11 @@ class CsvComponent extends Component {
 		return $headerRow;
 	}
 
+	/**
+	 * Retrieve the default filename for the csv
+	 *
+	 * @return string
+	 */
 	private function getDefaultFileName() {
 		return "export_" . $this->Controller->name . "_" . date("Y_m_d") . ".csv";
 	}
