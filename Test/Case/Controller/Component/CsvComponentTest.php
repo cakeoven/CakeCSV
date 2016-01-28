@@ -3,7 +3,7 @@ App::uses('Controller', 'Controller');
 App::uses('CakeRequest', 'Network');
 App::uses('CakeResponse', 'Network');
 App::uses('ComponentCollection', 'Controller');
-App::uses('ExportComponent', 'Export.Controller/Component');
+App::uses('CsvComponent', 'CakeCSV.Controller/Component');
 
 // A fake controller to test against
 class TestExportController extends Controller {
