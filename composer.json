@@ -2,6 +2,7 @@
   "name": "cakeoven/cake_csv",
   "description": "A CakePHP Component to export CSV files",
   "homepage": "http://github.com/cakeoven/CakeCSV",
+  "type": "cakephp-plugin",
   "keywords": [
     "cakeoven",
     "cakephp",
@@ -14,17 +15,17 @@
     {
       "name": "George Mponos",
       "email": "gmponos@gmail.com",
-      "homepage": "gmponos@gmail.com",
+      "homepage": "http://gmponos.webthink.gr",
       "role": "developer"
     }
   ],
-  "type": "cakephp-plugin",
   "support": {
     "issues": "https://github.com/cakeoven/CakeCSV/issues"
   },
   "require": {
     "php": ">=5.4.16",
-    "cakephp/cakephp": "^2.6"
+    "cakephp/cakephp": "^2.6",
+    "composer/installers": "*"
   },
   "require-dev": {
     "cakephp/cakephp-codesniffer": "*",
@@ -36,7 +37,8 @@
   "prefer-stable": true,
   "extra": {
     "branch-alias": {
-      "dev-master": "1.0-dev"
-    }
+      "dev-master": "2.0-dev"
+    },
+    "installer-name": "CakeCsv"
   }
 }

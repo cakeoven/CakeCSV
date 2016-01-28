@@ -6,14 +6,15 @@ App::uses('ComponentCollection', 'Controller');
 App::uses('ExportComponent', 'Export.Controller/Component');
 
 // A fake controller to test against
-class TestExportController extends Controller
-{
+class TestExportController extends Controller {
+
 	public $paginate = null;
 }
 
-class ExportComponentTest extends CakeTestCase
-{
+class ExportComponentTest extends CakeTestCase {
+
 	public $ExportComponent = null;
+
 	public $Controller = null;
 
 	// Note: I think really we should use fixtures for this; make a find call to the model with fixture data.
@@ -72,8 +73,7 @@ class ExportComponentTest extends CakeTestCase
 		],
 	];
 
-	public function setUp()
-	{
+	public function setUp() {
 		parent::setUp();
 		// Setup our component and fake test controller
 		$Collection = new ComponentCollection();
@@ -84,27 +84,23 @@ class ExportComponentTest extends CakeTestCase
 		$this->ExportComponent->startup($this->Controller);
 	}
 
-	public function testFlattenArray()
-	{
+	public function testFlattenArray() {
 		$resultArray = [];
 		$this->ExportComponent->flattenArray($this->exampleNested, $resultArray);
 		$this->assertEqual($this->exampleFlattened, $resultArray);
 	}
 
-	public function testGetKeysForHeaderRow()
-	{
+	public function testGetKeysForHeaderRow() {
 		$dedupedKeys = $this->ExportComponent->getKeysForHeaderRow($this->rowsWithInconsistentKeys);
 		$this->assertEqual($this->headerRow, $dedupedKeys);
 	}
 
-	public function testMapAllRowsToHeaderRow()
-	{
+	public function testMapAllRowsToHeaderRow() {
 		$result = $this->ExportComponent->mapAllRowsToHeaderRow($this->headerRow, $this->rowsWithInconsistentKeys);
 		$this->assertEqual($this->rowsWithMissingKeysAdded, $result);
 	}
 
-	public function tearDown()
-	{
+	public function tearDown() {
 		parent::tearDown();
 		// Clean up after we're done
 		unset($this->ExportComponent);

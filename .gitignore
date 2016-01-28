@@ -70,7 +70,6 @@ app/[Cc]onfig/email.php
 ### Composer
 composer.phar
 composer.lock
-vendor/
 !webroot/vendor
 
 ### ApiGen
