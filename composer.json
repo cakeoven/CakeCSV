@@ -24,11 +24,11 @@
   },
   "require": {
     "php": ">=5.4.16",
-    "cakephp/cakephp": "^2.6",
+    "cakephp/cakephp": "^2.7",
     "composer/installers": "*"
   },
   "require-dev": {
-    "cakephp/cakephp-codesniffer": "*",
+    "cakephp/cakephp-codesniffer": "dev-master",
     "phpunit/phpunit": "*"
   },
   "suggest": {
@@ -37,7 +37,7 @@
   "prefer-stable": true,
   "extra": {
     "branch-alias": {
-      "dev-master": "2.0-dev"
+      "dev-master": "2.x-dev"
     },
     "installer-name": "CakeCsv"
   }
