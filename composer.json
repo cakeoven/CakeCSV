@@ -28,7 +28,7 @@
     "composer/installers": "*"
   },
   "require-dev": {
-    "cakephp/cakephp-codesniffer": "dev-master",
+    "squizlabs/php_codesniffer": "~2.4",
     "phpunit/phpunit": "*"
   },
   "suggest": {

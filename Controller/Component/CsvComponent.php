@@ -76,7 +76,7 @@ class CsvComponent extends Component
     public function export($data, $filename = '')
     {
         if (empty($filename)) {
-            $filename = $this->_getDefaultFileName();
+            $filename = $this->getDefaultFileName();
         }
 
         // Flatten each row of the data array
@@ -167,7 +167,7 @@ class CsvComponent extends Component
      *
      * @return string
      */
-    protected function _getDefaultFileName()
+    protected function getDefaultFileName()
     {
         return "export_" . $this->Controller->name . "_" . date("Y_m_d") . ".csv";
     }
