@@ -1,19 +1,9 @@
 <?php
+namespace CakeCsv\Test\TestCase\Controller\Component;
 
-App::uses('Controller', 'Controller');
-App::uses('CakeRequest', 'Network');
-App::uses('CakeResponse', 'Network');
-App::uses('ComponentCollection', 'Controller');
-App::uses('CsvComponent', 'CakeCSV.Controller/Component');
+use Cake\TestSuite\TestCase;
 
-// A fake controller to test against
-class TestExportController extends Controller
-{
-
-    public $paginate = null;
-}
-
-class ExportComponentTest extends CakeTestCase
+class ExportComponentTest extends TestCase
 {
 
     public $ExportComponent = null;

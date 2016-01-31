@@ -1,24 +1,19 @@
 <?php
 
-App::uses('Component', 'Controller');
+namespace CakeCsv\Controller\Component;
+
+use Cake\Controller\Component;
 
 /**
  * Csv Component
  *
  * @author      Joshua Paling <http://www.bbldigital.com.au/>
  * @author      George Mponos <gmponos@gmail.com>
- * @description A component for CakePHP 2.x to export data as CSV
+ * @description A component for CakePHP 3.x to export data as CSV
  * @licence     MIT
  */
 class CsvComponent extends Component
 {
-
-    /**
-     * The calling Controller
-     *
-     * @var Controller
-     */
-    public $Controller;
 
     /**
      * the delimiter to use for the CSV file
@@ -49,15 +44,10 @@ class CsvComponent extends Component
     public $csvEncoding;
 
     /**
-     * Starts up ExportComponent for use in the controller
-     *
-     * @param Controller $controller A reference to the instantiating controller object
-     * @return void
+     * @param array $config
      */
-    public function startup(Controller $controller)
+    public function initialize(array $config)
     {
-        $this->Controller = $controller;
-
         if (empty($this->dataEncoding)) {
             $this->dataEncoding = 'UTF-8';
         }
@@ -65,6 +55,7 @@ class CsvComponent extends Component
         if (empty($this->csvEncoding)) {
             $this->csvEncoding = $this->dataEncoding;
         }
+        parent::initialize($config);
     }
 
     /**
@@ -76,7 +67,7 @@ class CsvComponent extends Component
     public function export($data, $filename = '')
     {
         if (empty($filename)) {
-            $filename = $this->getDefaultFileName();
+            $filename = $this->_getDefaultFileName();
         }
 
         // Flatten each row of the data array
@@ -88,12 +79,56 @@ class CsvComponent extends Component
         }
 
         $headers = $this->getKeysForHeaders($flatData);
-        $csv = $this->getCsvOutput($flatData, $headers);
+        $csv = $this->_getCsvOutput($flatData, $headers);
 
-        $this->Controller->autoRender = false;
-        $this->Controller->response->type('csv');
-        $this->Controller->response->download($filename);
-        $this->Controller->response->body($csv);
+        $this->response->type('csv');
+        $this->response->download($filename);
+        $this->response->body($csv);
+    }
+
+    /**
+     * @param $filename
+     * @return array|bool
+     */
+    public function import($filename)
+    {
+        $file = fopen($filename, 'r');
+        // open the file
+        if (!empty($file)) {
+            return [];
+        }
+
+        $data = [];
+        if (empty($fields)) {
+            // read the 1st row as headings
+            $fields = fgetcsv($file, null, $this->delimiter, $this->enclosure);
+            foreach ($fields as $key => $field) {
+                $field = trim($field);
+                if (empty($field)) {
+                    continue;
+                }
+                $fields[$key] = strtolower($field);
+            }
+        }
+
+        // Row counter
+        $r = 0;
+        // read each data row in the file
+        while ($row = fgetcsv($file, null, $this->delimiter, $this->enclosure)) {
+            // for each header field
+            foreach ($fields as $f => $field) {
+                if (!isset($row[$f])) {
+                    $row[$f] = null;
+                }
+                $row[$f] = trim($row[$f]);
+                $data[$r][$field] = $row[$f];
+            }
+            $r++;
+        }
+        // close the file
+        fclose($file);
+        // return the messages
+        return $data;
     }
 
     /**
@@ -103,7 +138,7 @@ class CsvComponent extends Component
      * @param array $headers The headers used for the CSV
      * @return string
      */
-    protected function getCsvOutput($data, $headers)
+    protected function _getCsvOutput($data, $headers)
     {
         $csvFp = fopen('php://temp', 'r+');
         fputcsv($csvFp, $headers, $this->delimiter, $this->enclosure);
@@ -167,8 +202,9 @@ class CsvComponent extends Component
      *
      * @return string
      */
-    protected function getDefaultFileName()
+    protected function _getDefaultFileName()
     {
-        return "export_" . $this->Controller->name . "_" . date("Y_m_d") . ".csv";
+        $name = $this->_registry->getController()->name;
+        return "export_" . $name . "_" . date("Y_m_d") . ".csv";
     }
 }

@@ -22,13 +22,18 @@
   "support": {
     "issues": "https://github.com/cakeoven/CakeCSV/issues"
   },
+  "autoload": {
+    "psr-4": {
+      "CakeCsv\\": "src",
+      "CakeCsv\\Test\\": "tests"
+    }
+  },
   "require": {
     "php": ">=5.4.16",
-    "cakephp/cakephp": "^2.7",
-    "composer/installers": "*"
+    "cakephp/cakephp": "^3.2"
   },
   "require-dev": {
-    "squizlabs/php_codesniffer": "~2.4",
+    "cakephp/cakephp-codesniffer": "~2.0",
     "phpunit/phpunit": "*"
   },
   "suggest": {
@@ -37,8 +42,7 @@
   "prefer-stable": true,
   "extra": {
     "branch-alias": {
-      "dev-master": "2.x-dev"
-    },
-    "installer-name": "CakeCsv"
+      "dev-3.x": "3.x-dev"
+    }
   }
 }

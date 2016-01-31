@@ -53,24 +53,15 @@ nb-configuration.xml
 .nb-gradle/
 
 ### CakePHP
-## CakePHP 2
+## CakePHP 3
 
-tmp/*
-[Cc]onfig/email.php
-[Cc]onfig/core.php
-[Cc]onfig/database.php
-app/tmp/*
-app/[Cc]onsole/*
-app/[Cc]onfig/core.php
-app/[Cc]onfig/database.php
-app/[Cc]onfig/email.php
-/[Vv]endor
-/[Vv]endors
+/tmp/*
+/logs/*
 
 ### Composer
 composer.phar
 composer.lock
-!webroot/vendor
+/vendor
 
 ### ApiGen
 docs
