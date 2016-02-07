@@ -3,6 +3,8 @@
 namespace CakeCsv\Controller\Component;
 
 use Cake\Controller\Component;
+use Cake\Utility\Hash;
+use CakeCsv\Libraries\CsvStream;
 
 /**
  * Csv Component
@@ -16,46 +18,32 @@ class CsvComponent extends Component
 {
 
     /**
-     * the delimiter to use for the CSV file
-     *
-     * @var string
+     * @var array
      */
-    public $delimiter;
+    protected $defaults;
 
-    /**
-     * The character each cell will be enclosed
-     *
-     * @var string
-     */
-    public $enclosure;
-
-    /**
-     * Contains the encoding the data where fetched
-     *
-     * @var string
-     */
-    public $dataEncoding;
-
-    /**
-     * Contains the encoding to convert the data for the csv file
-     *
-     * @var string
-     */
-    public $csvEncoding;
+    protected $options;
 
     /**
      * @param array $config
      */
     public function initialize(array $config)
     {
-        if (empty($this->dataEncoding)) {
-            $this->dataEncoding = 'UTF-8';
-        }
+        $this->defaults = Hash::merge([
+            'enclosure' => "'",
+            'delimiter' => ';',
+            'csvEncoding' => 'UTF-8',
+            'dataEncoding' => 'UTF-8',
+        ], $config);
+        parent::initialize($this->defaults);
+    }
 
-        if (empty($this->csvEncoding)) {
-            $this->csvEncoding = $this->dataEncoding;
-        }
-        parent::initialize($config);
+    /**
+     * @param array $options
+     */
+    protected function setUpOptions(array $options)
+    {
+        $this->options = Hash::merge($this->defaults, $options);
     }
 
     /**
@@ -63,12 +51,11 @@ class CsvComponent extends Component
      *
      * @param array  $data
      * @param string $filename
+     * @param array  $options
      */
-    public function export($data, $filename = '')
+    public function download($data, $filename = '', array $options = [])
     {
-        if (empty($filename)) {
-            $filename = $this->_getDefaultFileName();
-        }
+        $this->setUpOptions($options);
 
         // Flatten each row of the data array
         $flatData = $values = [];
@@ -81,40 +68,33 @@ class CsvComponent extends Component
         $headers = $this->getKeysForHeaders($flatData);
         $csv = $this->_getCsvOutput($flatData, $headers);
 
+        if (empty($filename)) {
+            $filename = $this->_getDefaultFileName();
+        }
+
         $this->response->type('csv');
         $this->response->download($filename);
         $this->response->body($csv);
     }
 
     /**
-     * @param $filename
-     * @return array|bool
+     * @param string $filename
+     * @param array  $options
+     * @return array
      */
-    public function import($filename)
+    public function getContentsFromCsv($filename, array $options = [])
     {
-        $file = fopen($filename, 'r');
-        // open the file
-        if (!empty($file)) {
-            return [];
-        }
+        $this->setUpOptions($options);
+        $csvStream = CsvStream::openFile($filename, 'r', $options['delimiter'], $options['enclosure']);
+        $csvStream->readRow();
 
         $data = [];
-        if (empty($fields)) {
-            // read the 1st row as headings
-            $fields = fgetcsv($file, null, $this->delimiter, $this->enclosure);
-            foreach ($fields as $key => $field) {
-                $field = trim($field);
-                if (empty($field)) {
-                    continue;
-                }
-                $fields[$key] = strtolower($field);
-            }
-        }
+        // read the 1st row as headings
+        $fields = $csvStream->readRow();
 
-        // Row counter
         $r = 0;
         // read each data row in the file
-        while ($row = fgetcsv($file, null, $this->delimiter, $this->enclosure)) {
+        while ($row = $csvStream->readRow()) {
             // for each header field
             foreach ($fields as $f => $field) {
                 if (!isset($row[$f])) {
@@ -125,9 +105,7 @@ class CsvComponent extends Component
             }
             $r++;
         }
-        // close the file
-        fclose($file);
-        // return the messages
+
         return $data;
     }
 
@@ -140,22 +118,32 @@ class CsvComponent extends Component
      */
     protected function _getCsvOutput($data, $headers)
     {
-        $csvFp = fopen('php://temp', 'r+');
-        fputcsv($csvFp, $headers, $this->delimiter, $this->enclosure);
-        foreach ($data as $row) {
-            fputcsv($csvFp, $row, $this->delimiter, $this->enclosure);
-        }
-        rewind($csvFp);
-        $output = '';
-        while (($buffer = fgets($csvFp, 4096)) !== false) {
-            $output .= $buffer;
-        }
-        fclose($csvFp);
+        $csvStream = CsvStream::openFile('php://temp', 'r+');
 
-        if (!empty($this->csvEncoding) && $this->dataEncoding != $this->csvEncoding) {
-            $output = iconv($this->dataEncoding, $this->csvEncoding, $output);
+        $csvStream->writeRow($headers);
+        foreach ($data as $row) {
+            $csvStream->writeRow($row);
         }
+        $csvStream->rewind();
+        $output = $csvStream->getContents();
         return $output;
+    }
+
+    /**
+     * @param $content
+     * @return string
+     */
+    protected function fixEncodings($content)
+    {
+        if (empty($this->options['csvEncoding'])) {
+            return $content;
+        }
+
+        if ($this->options['dataEncoding'] == $this->options['csvEncoding']) {
+            return $content;
+        }
+
+        return iconv($this->options['dataEncoding'], $this->options['csvEncoding'], $content);
     }
 
     /**

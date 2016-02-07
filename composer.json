@@ -30,7 +30,8 @@
   },
   "require": {
     "php": ">=5.4.16",
-    "cakephp/cakephp": "^3.2"
+    "cakephp/cakephp": "^3.2",
+    "psr/http-message": "*"
   },
   "require-dev": {
     "cakephp/cakephp-codesniffer": "~2.0",

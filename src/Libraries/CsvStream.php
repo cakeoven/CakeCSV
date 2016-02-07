@@ -10,12 +10,32 @@ class CsvStream implements StreamInterface
 
     protected $stream;
 
-    public function __construct($filename)
+    protected $size = null;
+
+    protected $delimiter;
+
+    protected $enclosure;
+
+    public function __construct($stream, $delimiter, $enclosure)
     {
-        $this->stream = fopen($filename, 'r');
-        if (empty($file)) {
-            return new \UnexpectedValueException("File $filename could not be open or empty");
+        $this->setStream($stream);
+    }
+
+    public static function openFile($filename, $mode, $delimiter, $enclosure)
+    {
+        $stream = fopen($filename, $mode);
+        return new self($stream, $delimiter, $enclosure);
+    }
+
+    /**
+     * @param $stream
+     */
+    protected function setStream($stream)
+    {
+        if (!is_resource($stream)) {
+            throw new \InvalidArgumentException('Stream must be a resource');
         }
+        $this->stream = $stream;
     }
 
     /**
@@ -34,7 +54,8 @@ class CsvStream implements StreamInterface
      */
     public function __toString()
     {
-        // TODO: Implement __toString() method.
+        $this->rewind();
+        return $this->getContents();
     }
 
     /**
@@ -44,9 +65,7 @@ class CsvStream implements StreamInterface
      */
     public function close()
     {
-        if (is_resource($this->stream)) {
-            fclose($this->stream);
-        }
+        fclose($this->stream);
     }
 
     /**
@@ -68,7 +87,18 @@ class CsvStream implements StreamInterface
      */
     public function getSize()
     {
-        // TODO: Implement getSize() method.
+        if ($this->size !== null) {
+            return $this->size;
+        }
+
+        // If the stream is a file based stream and local, then use fstat
+        $stats = fstat($this->stream);
+        if (isset($stats['size'])) {
+            $this->size = $stats['size'];
+            return $this->size;
+        }
+
+        return null;
     }
 
     /**
@@ -89,7 +119,7 @@ class CsvStream implements StreamInterface
      */
     public function eof()
     {
-        // TODO: Implement eof() method.
+        return feof($this->stream);
     }
 
     /**
@@ -131,7 +161,7 @@ class CsvStream implements StreamInterface
      */
     public function rewind()
     {
-        // TODO: Implement rewind() method.
+        rewind($this->stream);
     }
 
     /**
@@ -170,12 +200,16 @@ class CsvStream implements StreamInterface
      * Returns the remaining contents in a string
      *
      * @return string
-     * @throws \RuntimeException if unable to read or an error occurs while
-     *     reading.
+     * @throws \RuntimeException if unable to read or an error occurs while reading.
      */
     public function getContents()
     {
-        // TODO: Implement getContents() method.
+        $contents = stream_get_contents($this->stream);
+        if ($contents === false) {
+            throw new \RuntimeException('Unable to read stream contents');
+        }
+
+        return $contents;
     }
 
     /**
@@ -192,7 +226,8 @@ class CsvStream implements StreamInterface
      */
     public function getMetadata($key = null)
     {
-        // TODO: Implement getMetadata() method.
+        $meta = stream_get_meta_data($this->stream);
+        return !$key ? $meta : (array_key_exists($key, $meta) ? $meta[$key] : null);
     }
 
     /**
@@ -207,7 +242,17 @@ class CsvStream implements StreamInterface
      */
     public function read($length)
     {
-        return fgetcsv($this->stream, $length, $this->options['delimiter'], $this->options['enclosure']);
+        return fgets($this->stream, 4096);
+    }
+
+    public function readRow()
+    {
+        return fgetcsv($this->stream, 0, $this->delimiter, $this->enclosure);
+    }
+
+    public function writeRow(array $data)
+    {
+
     }
 
     /**
