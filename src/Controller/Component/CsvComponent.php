@@ -99,16 +99,14 @@ class CsvComponent extends Component
         }
 
         $data = [];
-        if (empty($fields)) {
-            // read the 1st row as headings
-            $fields = fgetcsv($file, null, $this->delimiter, $this->enclosure);
-            foreach ($fields as $key => $field) {
-                $field = trim($field);
-                if (empty($field)) {
-                    continue;
-                }
-                $fields[$key] = strtolower($field);
+        // read the 1st row as headings
+        $fields = fgetcsv($file, null, $this->delimiter, $this->enclosure);
+        foreach ($fields as $key => $field) {
+            $field = trim($field);
+            if (empty($field)) {
+                continue;
             }
+            $fields[$key] = strtolower($field);
         }
 
         // Row counter
