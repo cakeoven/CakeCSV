@@ -17,7 +17,6 @@ use CakeCsv\Libraries\CsvStream;
 class CsvComponent extends Component
 {
 
-
     /**
      * @var array
      */
@@ -187,7 +186,7 @@ class CsvComponent extends Component
     /**
      * Retrieve the default filename for the csv
      *
-     * @param $name
+     * @param string $name
      * @return string
      */
     protected function _getFileName($name)
