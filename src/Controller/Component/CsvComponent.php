@@ -17,25 +17,26 @@ use CakeCsv\Libraries\CsvStream;
 class CsvComponent extends Component
 {
 
+
     /**
      * @var array
      */
-    protected $defaults;
+    protected $_defaultConfig = [
+        'delimiter' => ';',
+        'enclosure' => "'",
+        'csvEncoding' => 'UTF-8',
+        'dataEncoding' => 'UTF-8',
+    ];
 
-    protected $options;
+    protected $_config = [];
 
     /**
      * @param array $config
      */
     public function initialize(array $config)
     {
-        $this->defaults = Hash::merge([
-            'enclosure' => "'",
-            'delimiter' => ';',
-            'csvEncoding' => 'UTF-8',
-            'dataEncoding' => 'UTF-8',
-        ], $config);
-        parent::initialize($this->defaults);
+        $this->_config = Hash::merge($this->_defaultConfig, $config);
+        parent::initialize($this->_config);
     }
 
     /**
@@ -43,7 +44,7 @@ class CsvComponent extends Component
      */
     protected function setUpOptions(array $options)
     {
-        $this->options = Hash::merge($this->defaults, $options);
+        $this->_config = Hash::merge($this->_config, $options);
     }
 
     /**
@@ -67,10 +68,7 @@ class CsvComponent extends Component
 
         $headers = $this->getKeysForHeaders($flatData);
         $output = $this->_getCsvOutput($flatData, $headers);
-
-        if (empty($filename)) {
-            $filename = $this->_getDefaultFileName();
-        }
+        $filename = $this->_getFileName($filename);
 
         $this->response->type('csv');
         $this->response->download($filename);
@@ -85,7 +83,7 @@ class CsvComponent extends Component
     public function getContentsFromCsv($filename, array $options = [])
     {
         $this->setUpOptions($options);
-        $csvStream = CsvStream::openFile($filename, 'r', $options['delimiter'], $options['enclosure']);
+        $csvStream = CsvStream::openFile($filename, 'r', $this->_config['delimiter'], $this->_config['delimiter']);
         $csvStream->readRow();
 
         $data = [];
@@ -136,15 +134,15 @@ class CsvComponent extends Component
      */
     protected function fixEncodings($content)
     {
-        if (empty($this->options['csvEncoding'])) {
+        if (empty($this->_config['csvEncoding'])) {
             return $content;
         }
 
-        if ($this->options['dataEncoding'] == $this->options['csvEncoding']) {
+        if ($this->_config['dataEncoding'] == $this->_config['csvEncoding']) {
             return $content;
         }
 
-        return iconv($this->options['dataEncoding'], $this->options['csvEncoding'], $content);
+        return iconv($this->_config['dataEncoding'], $this->_config['csvEncoding'], $content);
     }
 
     /**
@@ -189,10 +187,14 @@ class CsvComponent extends Component
     /**
      * Retrieve the default filename for the csv
      *
+     * @param $name
      * @return string
      */
-    protected function _getDefaultFileName()
+    protected function _getFileName($name)
     {
+        if (!empty($name)) {
+            return $name;
+        }
         $name = $this->_registry->getController()->name;
         return "export_" . $name . "_" . date("Y_m_d") . ".csv";
     }
