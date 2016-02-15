@@ -46,6 +46,8 @@ class CsvStream implements StreamInterface
         $this->seekable = $meta['seekable'];
         $this->readable = isset(self::$accessRights['read'][$meta['mode']]);
         $this->writable = isset(self::$accessRights['write'][$meta['mode']]);
+        $this->delimiter = $delimiter;
+        $this->enclosure = $enclosure;
     }
 
     /**
