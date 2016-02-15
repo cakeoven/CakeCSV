@@ -2,7 +2,6 @@
 
 namespace CakeCsv\Libraries;
 
-
 use Psr\Http\Message\StreamInterface;
 
 class CsvStream implements StreamInterface
@@ -16,26 +15,37 @@ class CsvStream implements StreamInterface
 
     protected $enclosure;
 
+    protected $seekable;
+
+    protected $readable;
+
+    protected $writable;
+
+    /**
+     * @var array Hash of readable and writable stream types
+     */
+    private static $accessRights = [
+        'read' => [
+            'r' => true, 'w+' => true, 'r+' => true, 'x+' => true, 'c+' => true,
+            'rb' => true, 'w+b' => true, 'r+b' => true, 'x+b' => true,
+            'c+b' => true, 'rt' => true, 'w+t' => true, 'r+t' => true,
+            'x+t' => true, 'c+t' => true, 'a+' => true,
+        ],
+        'write' => [
+            'w' => true, 'w+' => true, 'rw' => true, 'r+' => true, 'x+' => true,
+            'c+' => true, 'wb' => true, 'w+b' => true, 'r+b' => true,
+            'x+b' => true, 'c+b' => true, 'w+t' => true, 'r+t' => true,
+            'x+t' => true, 'c+t' => true, 'a' => true, 'a+' => true,
+        ],
+    ];
+
     public function __construct($stream, $delimiter, $enclosure)
     {
         $this->setStream($stream);
-    }
-
-    public static function openFile($filename, $mode, $delimiter, $enclosure)
-    {
-        $stream = fopen($filename, $mode);
-        return new self($stream, $delimiter, $enclosure);
-    }
-
-    /**
-     * @param $stream
-     */
-    protected function setStream($stream)
-    {
-        if (!is_resource($stream)) {
-            throw new \InvalidArgumentException('Stream must be a resource');
-        }
-        $this->stream = $stream;
+        $meta = stream_get_meta_data($this->stream);
+        $this->seekable = $meta['seekable'];
+        $this->readable = isset(self::$accessRights['read'][$meta['mode']]);
+        $this->writable = isset(self::$accessRights['write'][$meta['mode']]);
     }
 
     /**
@@ -59,6 +69,38 @@ class CsvStream implements StreamInterface
     }
 
     /**
+     * Closes the stream when the helper is destructed
+     */
+    public function __destruct()
+    {
+        $this->close();
+    }
+
+    /**
+     * @param $filename
+     * @param $mode
+     * @param $delimiter
+     * @param $enclosure
+     * @return CsvStream
+     */
+    public static function openFile($filename, $mode, $delimiter, $enclosure)
+    {
+        $stream = fopen($filename, $mode);
+        return new self($stream, $delimiter, $enclosure);
+    }
+
+    /**
+     * @param $stream
+     */
+    protected function setStream($stream)
+    {
+        if (!is_resource($stream)) {
+            throw new \InvalidArgumentException('Stream must be a resource');
+        }
+        $this->stream = $stream;
+    }
+
+    /**
      * Closes the stream and any underlying resources.
      *
      * @return void
@@ -77,7 +119,7 @@ class CsvStream implements StreamInterface
      */
     public function detach()
     {
-        // TODO: Implement detach() method.
+        throw new \LogicException("You are not allowed to detach the stream");
     }
 
     /**
@@ -129,7 +171,7 @@ class CsvStream implements StreamInterface
      */
     public function isSeekable()
     {
-        // TODO: Implement isSeekable() method.
+        return $this->seekable;
     }
 
     /**
@@ -171,7 +213,7 @@ class CsvStream implements StreamInterface
      */
     public function isWritable()
     {
-        // TODO: Implement isWritable() method.
+        $this->writable;
     }
 
     /**
@@ -183,7 +225,7 @@ class CsvStream implements StreamInterface
      */
     public function write($string)
     {
-        // TODO: Implement write() method.
+        return fputs($this->stream, ($string . "\n"));
     }
 
     /**
@@ -193,7 +235,7 @@ class CsvStream implements StreamInterface
      */
     public function isReadable()
     {
-        // TODO: Implement isReadable() method.
+        $this->readable;
     }
 
     /**
@@ -233,11 +275,9 @@ class CsvStream implements StreamInterface
     /**
      * Read data from the stream.
      *
-     * @param int $length Read up to $length bytes from the object and return
-     *                    them. Fewer than $length bytes may be returned if underlying stream
-     *                    call returns fewer bytes.
-     * @return string Returns the data read from the stream, or an empty string
-     *                    if no bytes are available.
+     * @param int $length Read up to $length bytes from the object and return them. Fewer than $length bytes
+     *                    may be returned if underlying stream call returns fewer bytes.
+     * @return string Returns the data read from the stream, or an empty string if no bytes are available.
      * @throws \RuntimeException if an error occurs.
      */
     public function read($length)
@@ -245,21 +285,21 @@ class CsvStream implements StreamInterface
         return fgets($this->stream, 4096);
     }
 
+    /**
+     * @return array
+     */
     public function readRow()
     {
         return fgetcsv($this->stream, 0, $this->delimiter, $this->enclosure);
     }
 
-    public function writeRow(array $data)
-    {
-
-    }
-
     /**
-     * Closes the stream when the helper is destructed
+     * @param array $row
+     * @return int
      */
-    public function __destruct()
+    public function writeRow(array $row)
     {
-        $this->close();
+        return fputcsv($this->stream, $row, $this->delimiter, $this->enclosure);
     }
+
 }

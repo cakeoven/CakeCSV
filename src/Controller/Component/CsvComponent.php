@@ -53,7 +53,7 @@ class CsvComponent extends Component
      * @param string $filename
      * @param array  $options
      */
-    public function download($data, $filename = '', array $options = [])
+    public function download(array $data, $filename = null, array $options = [])
     {
         $this->setUpOptions($options);
 
@@ -66,7 +66,7 @@ class CsvComponent extends Component
         }
 
         $headers = $this->getKeysForHeaders($flatData);
-        $csv = $this->_getCsvOutput($flatData, $headers);
+        $output = $this->_getCsvOutput($flatData, $headers);
 
         if (empty($filename)) {
             $filename = $this->_getDefaultFileName();
@@ -74,7 +74,7 @@ class CsvComponent extends Component
 
         $this->response->type('csv');
         $this->response->download($filename);
-        $this->response->body($csv);
+        $this->response->body($output);
     }
 
     /**
@@ -118,7 +118,7 @@ class CsvComponent extends Component
      */
     protected function _getCsvOutput($data, $headers)
     {
-        $csvStream = CsvStream::openFile('php://temp', 'r+');
+        $csvStream = CsvStream::openFile('php://temp', 'r+', ';', "'");
 
         $csvStream->writeRow($headers);
         foreach ($data as $row) {
@@ -126,7 +126,8 @@ class CsvComponent extends Component
         }
         $csvStream->rewind();
         $output = $csvStream->getContents();
-        return $output;
+        $csvStream->close();
+        return $this->fixEncodings($output);
     }
 
     /**

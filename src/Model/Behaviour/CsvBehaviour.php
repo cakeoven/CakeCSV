@@ -2,6 +2,7 @@
 namespace CakeOven\CakeCsv\Model\Behavior;
 
 use Cake\ORM\Behavior;
+use Cake\ORM\Query;
 use Cake\ORM\Table;
 use Cake\Utility\Hash;
 use CakeCsv\Libraries\CsvStream;
@@ -12,25 +13,17 @@ use CakeCsv\Libraries\CsvStream;
 class CsvBehavior extends Behavior
 {
 
-    /**
-     * Import public function
-     *
-     * @param CsvStream|string $file
-     * @param array            $fields
-     * @param array            $options
-     * @return array of all data from the csv file in [Model][field] format
-     * @author Dean Sofer
-     */
-    public function importFromCsv($file, array $fields = [], array $options = [])
-    {
-
-    }
+    public $_defaultConfig;
 
     /**
      * return CsvStream
+     *
+     * @param Query $query
+     * @param array $options
+     * @return Query
      */
-    public function exportForCsv()
+    public function findCsv(Query $query, array $options)
     {
-
+        return $query->where($options);
     }
 }
