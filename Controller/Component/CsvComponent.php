@@ -88,7 +88,14 @@ class CsvComponent extends Component
         }
 
         $headers = $this->getKeysForHeaders($flatData);
-        $csv = $this->getCsvOutput($flatData, $headers);
+
+        $file = CsvFile::openFile('php://temp', 'r+', $this->delimiter, $this->enclosure);
+        $file->write($headers);
+        foreach ($data as $row) {
+            $file->write($row);
+        }
+
+        $csv = $this->decode($file->getContents());
 
         $this->Controller->autoRender = false;
         $this->Controller->response->type('csv');
@@ -97,23 +104,47 @@ class CsvComponent extends Component
     }
 
     /**
-     * Get the output to save as CSV
-     *
-     * @param array $data    The data used for the CSV
-     * @param array $headers The headers used for the CSV
-     * @return string
+     * @param $data
+     * @param $filename
+     * @return bool
      */
-    protected function getCsvOutput($data, $headers)
+    public function save($data, $filename)
     {
-        $file = CsvFile::openFile('php://temp', 'r+', $this->delimiter, $this->enclosure);
+        // Flatten each row of the data array
+        $flatData = $values = [];
+        foreach ($data as $numericKey => $row) {
+            $flatRow = [];
+            $this->flattenArray($row, $flatRow);
+            $flatData[$numericKey] = $flatRow;
+        }
+
+        $headers = $this->getKeysForHeaders($flatData);
+        $file = CsvFile::openFile($filename, 'r+', $this->delimiter, $this->enclosure);
         $file->write($headers);
         foreach ($data as $row) {
             $file->write($row);
         }
+        $file->close();
 
-        return $this->decode($file->getContents());
+        return true;
     }
 
+    /**
+     * @param $filename
+     */
+    public function download($filename)
+    {
+        $file = CsvFile::openFile($filename, 'r+', $this->delimiter, $this->enclosure);
+        $csv = $this->decode($file->getContents());
+        $this->Controller->response->type('csv');
+        $this->Controller->response->download($filename);
+        $this->Controller->response->body($csv);
+    }
+
+    /**
+     * @param string $output
+     * @return string
+     */
     protected function decode($output)
     {
         if (!empty($this->csvEncoding) && $this->dataEncoding != $this->csvEncoding) {
