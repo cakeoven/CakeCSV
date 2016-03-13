@@ -105,18 +105,17 @@ class CsvComponent extends Component
      */
     protected function getCsvOutput($data, $headers)
     {
-        $csvFp = fopen('php://temp', 'r+');
-        fputcsv($csvFp, $headers, $this->delimiter, $this->enclosure);
+        $file = CsvFile::openFile('php://temp', 'r+', $this->delimiter, $this->enclosure);
+        $file->write($headers);
         foreach ($data as $row) {
-            fputcsv($csvFp, $row, $this->delimiter, $this->enclosure);
+            $file->write($row);
         }
-        rewind($csvFp);
-        $output = '';
-        while (($buffer = fgets($csvFp, 4096)) !== false) {
-            $output .= $buffer;
-        }
-        fclose($csvFp);
 
+        return $this->decode($file->getContents());
+    }
+
+    protected function decode($output)
+    {
         if (!empty($this->csvEncoding) && $this->dataEncoding != $this->csvEncoding) {
             $output = iconv($this->dataEncoding, $this->csvEncoding, $output);
         }
