@@ -27,7 +27,7 @@ or download it from https://github.com/cakeoven/CakeCsv
 In app/Config/bootstrap.php, add a line to load the plugin:
 
     //Loads only the Csv plugin
-	CakePlugin::load('CakeCSV'); 
+	CakePlugin::load('CakeCsv'); 
 
 or
     //Loads all plugins at once
@@ -63,7 +63,7 @@ Your export function in your Cities controller might look like this:
 You can set options when loading the component
 
     var $components = [
-        CakeCsv.Csv => [
+        'CakeCsv.Csv' => [
             'delimiter' => ';',
             'enclosure' => '"',
             'dataEncoding' => 'UTF-8',
